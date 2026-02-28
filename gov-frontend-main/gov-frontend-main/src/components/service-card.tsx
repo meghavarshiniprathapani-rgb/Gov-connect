@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   FileText, 
   Car, 
@@ -19,6 +20,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 const IconRegistry: Record<string, any> = {
   FileText,
@@ -50,7 +52,22 @@ export function ServiceCard({
   link,
   className
 }: ServiceCardProps) {
+  const router = useRouter();
+  const { toast } = useToast();
   const Icon = IconRegistry[departmentIconName] || HelpCircle;
+
+  const handleApplyClick = (e: React.MouseEvent) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('gov_session_token') : null;
+    
+    if (!token) {
+      e.preventDefault();
+      toast({
+        title: "Official Authorization Required",
+        description: "Please sign in to your GovConnect account to access this service application.",
+      });
+      router.push('/login');
+    }
+  };
 
   return (
     <Card className={cn("flex flex-col rounded-md shadow-sm border-border hover:border-accent hover:shadow-md transition-all duration-300", className)}>
@@ -65,7 +82,7 @@ export function ServiceCard({
         <CardDescription className="pt-3 text-muted-foreground leading-relaxed">{description}</CardDescription>
       </CardHeader>
       <CardContent className="mt-auto">
-        <Button asChild variant="outline" className="w-full font-bold">
+        <Button asChild variant="outline" className="w-full font-bold" onClick={handleApplyClick}>
           <Link href={link}>
             Apply Now <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
